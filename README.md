@@ -154,40 +154,6 @@ OLLAMA_HOST=http://localhost:11434
 
 ---
 
-## 🛠️ Utility Scripts
-
-### check_models.sh
-Verify Ollama models are installed and working:
-```bash
-./check_models.sh          # Check models
-./check_models.sh --pull   # Auto-pull missing models
-```
-
-### check_indexing.sh
-Diagnose document indexing issues:
-```bash
-./check_indexing.sh
-```
-
-Shows:
-- Documents in `data_store/`
-- ChromaDB indexing status
-- Test search results
-- Current configuration
-
-### upgrade_llm.sh
-Upgrade to a better LLM model:
-```bash
-./upgrade_llm.sh
-```
-
-Features:
-- Auto-detects system RAM
-- Recommends best model for your system
-- Downloads and configures automatically
-
----
-
 ## 🔧 Troubleshooting
 
 ### Common Issues
