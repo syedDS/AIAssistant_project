@@ -1,4 +1,4 @@
-# 🎓 AI-Assistant-SelfTutoring
+# 🎓 AI-Assistant-Self Tutoring
 
 A **self-tutoring AI assistant** with document grounding, knowledge graphs, and deep research capabilities. Upload your learning materials and get intelligent, cited answers from your documents.
 
