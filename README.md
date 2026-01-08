@@ -142,10 +142,7 @@ OLLAMA_HOST=http://localhost:11434
 | `qwen2.5:7b` | 4GB | 8GB+ | Technical docs | ⭐⭐⭐⭐⭐ |
 | `phi3:3.8b` | 2.3GB | 4GB+ | Low resources | ⭐⭐⭐ |
 
-**Upgrade your LLM:**
-```bash
-./upgrade_llm.sh
-```
+
 
 ### Embedding Models
 
