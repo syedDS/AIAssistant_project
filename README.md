@@ -173,19 +173,8 @@ pkill ollama && ollama serve &
 ollama list
 ```
 
-#### 2. Documents Not Found in Search
 
-**Problem:** Documents are indexed but queries return "Not found in your documents"
-
-**Cause:** LLM model is too weak (e.g., llama3.2:1b)
-
-**Solution:**
-```bash
-# Upgrade to 3b or 8b variant
-./upgrade_llm.sh
-```
-
-#### 3. ChromaDB Reset After Model Change
+#### 2. ChromaDB Reset After Model Change
 
 **Problem:** Changing embedding models wipes the database
 
