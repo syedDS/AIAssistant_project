@@ -1,6 +1,7 @@
 # 🎓 AI-Assistant-Self Tutoring
 
 A **self-tutoring AI assistant** with document grounding, knowledge graphs, and deep research capabilities. Upload your learning materials and get intelligent, cited answers from your documents.
+<img width="929" height="440" alt="image" src="https://github.com/user-attachments/assets/9a3ffef4-962c-441b-90e4-85bd6be3efa4" />
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)
