@@ -36,10 +36,10 @@ A **self-tutoring AI assistant** with document grounding, knowledge graphs, and 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd graphrag_project
+
 
 # Make scripts executable
-chmod +x startup.sh check_models.sh check_indexing.sh upgrade_llm.sh
+chmod +x startup.sh 
 
 # Run the startup script (handles everything automatically)
 ./startup.sh
@@ -49,7 +49,7 @@ chmod +x startup.sh check_models.sh check_indexing.sh upgrade_llm.sh
 ```batch
 REM Clone the repository
 git clone <repository-url>
-cd graphrag_project
+
 
 REM Run the startup script
 startup.bat
