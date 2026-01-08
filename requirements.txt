@@ -1,0 +1,52 @@
+# GraphRAG Security Architect - Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+flask>=3.0.0
+werkzeug>=3.0.0
+
+# LangChain Ecosystem
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-community>=0.2.0
+langchain-ollama>=0.1.0
+langchain-chroma>=0.1.0
+
+# Vector Database
+chromadb>=0.4.0
+
+# Graph Database
+neo4j>=5.0.0
+
+# Document Processing
+PyPDF2>=3.0.0
+python-docx>=1.0.0
+pandas>=2.0.0
+
+# Configuration
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+
+# Web Search & Deep Research
+duckduckgo-search>=4.0.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+
+# Security Guardrails (Optional - falls back to built-in checks if not installed)
+# nemoguardrails>=0.9.0
+
+# Optional: For faster processing
+# numpy>=1.24.0
+# scipy>=1.11.0
+
+# Optional: For evaluation
+# scikit-learn>=1.3.0
+# matplotlib>=3.7.0
+
+# Optional: For fine-tuning (requires GPU)
+# torch>=2.0.0
+# transformers>=4.35.0
+# peft>=0.6.0
+# trl>=0.7.0
+# accelerate>=0.24.0
+# bitsandbytes>=0.41.0

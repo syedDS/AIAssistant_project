@@ -1,0 +1,172 @@
+# =============================================================================
+# AI-Assistant-SelfTutoring - Git Ignore
+# =============================================================================
+
+# =============================================================================
+# PYTHON
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+venv/
+ENV/
+env/
+.venv/
+virtualenv/
+
+# Python Distribution
+dist/
+build/
+*.egg-info/
+*.egg
+wheels/
+
+# =============================================================================
+# PROJECT-SPECIFIC DATA (NEVER COMMIT USER DATA)
+# =============================================================================
+
+# User Documents (contains sensitive/proprietary data)
+data_store/
+data_store/**/*
+
+# Vector Database (binary, regeneratable)
+chroma_graphrag_db/
+chroma_graphrag_db/**/*
+
+# Indexed File Tracker (user-specific)
+indexed_files.json
+
+# Neo4j Database (if local)
+neo4j_data/
+
+# Screenshots and test images (user testing artifacts)
+ss/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+!docs/**/*.png
+!docs/**/*.jpg
+
+# =============================================================================
+# ENVIRONMENT & SECRETS
+# =============================================================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# =============================================================================
+# IDE & EDITOR
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# =============================================================================
+# LOGS
+# =============================================================================
+*.log
+logs/
+log/
+*.log.*
+
+# =============================================================================
+# OS-SPECIFIC
+# =============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+
+# Linux
+.directory
+.Trash-*
+
+# =============================================================================
+# TESTING & COVERAGE
+# =============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+
+# =============================================================================
+# JUPYTER NOTEBOOKS
+# =============================================================================
+.ipynb_checkpoints/
+*.ipynb
+
+# =============================================================================
+# DOCUMENTATION BUILD
+# =============================================================================
+docs/_build/
+site/
+
+# =============================================================================
+# TEMPORARY FILES
+# =============================================================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~.nib
+
+# =============================================================================
+# DOCKER (if using volumes)
+# =============================================================================
+docker-volumes/
+.dockerignore.local
+
+# =============================================================================
+# PACKAGE MANAGERS
+# =============================================================================
+node_modules/
+package-lock.json
+yarn.lock
+
+# =============================================================================
+# UTILITY SCRIPTS (EXCLUDE FROM PUBLIC REPO)
+# =============================================================================
+upgrade_llm.sh
+check_indexing.sh
+check_models.sh
+test_ollama.py
+test_guardrails.py
+TROUBLESHOOTING_INDEXING.md
+# =============================================================================
+# DOCUMENTATION (EXCLUDE FROM PUBLIC REPO)
+# =============================================================================
+REPOSITORY_CLEANUP.md
+.github-ready.md
+
+# =============================================================================
+# ALLOW THESE FILES (EXCEPTIONS)
+# =============================================================================
+!.env.example
+!.gitignore
+!.dockerignore

@@ -1,0 +1,107 @@
+# ============================================================================
+# GraphRAG Security Architect - Docker Ignore
+# ============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker/
+
+# Data and databases (will be mounted as volumes)
+data_store/
+chroma_graphrag_db/
+*.json
+!package.json
+
+# Logs
+*.log
+logs/
+
+# Environment files (will be set via docker env)
+.env
+.env.local
+.env.*.local
+
+# Documentation (optional - uncomment to include)
+# README.md
+# docs/
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Cache
+.cache/
+*.cache
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Entity resolution cache
+entity_resolution_cache.json
+
+# Indexed files tracker (will be mounted as volume)
+indexed_files.json
+
+# Large model files
+*.bin
+*.pt
+*.pth
+*.onnx
+*.safetensors

@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Assistant-SelfTutoring</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 92vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .logo { font-size: 28px; }
+        .header-title h1 { font-size: 20px; font-weight: 600; }
+        .header-title p { opacity: 0.8; font-size: 11px; }
+        .mode-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .mode-badge.fast { background: linear-gradient(135deg, #00b894, #00cec9); color: white; }
+        .mode-badge.full { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .header-btn {
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .header-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+        .header-btn.primary { background: linear-gradient(135deg, #e17055, #d63031); border: none; }
+        .header-btn.research { background: linear-gradient(135deg, #0984e3, #74b9ff); border: none; }
+        .header-btn.kg { background: linear-gradient(135deg, #6c5ce7, #a29bfe); border: none; }
+        #fileInput { display: none; }
+        .stats-bar {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 10px 25px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-left { display: flex; gap: 20px; }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-icon { font-size: 16px; }
+        .stat-info { display: flex; flex-direction: column; }
+        .stat-label { font-size: 9px; color: #6c757d; text-transform: uppercase; }
+        .stat-value { font-size: 14px; font-weight: 700; color: #0f3460; }
+        .stats-right { display: flex; gap: 12px; align-items: center; }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .toggle-label { font-size: 11px; font-weight: 600; color: #495057; }
+        .toggle-switch { position: relative; width: 44px; height: 22px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 22px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(22px); }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .status-badge.active { background: linear-gradient(135deg, #00b894, #00cec9); color: white; }
+        .status-badge.inactive { background: #f8d7da; color: #721c24; }
+        .main-content { display: flex; flex: 1; overflow: hidden; }
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s;
+        }
+        .sidebar.collapsed { width: 0; overflow: hidden; }
+        .sidebar-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+        .sidebar-title { font-size: 13px; font-weight: 600; color: #495057; }
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .sidebar-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .sidebar-tab:hover { background: #e9ecef; }
+        .sidebar-tab.active { color: #6c5ce7; border-bottom-color: #6c5ce7; background: white; }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
+        .sidebar-panel { display: none; }
+        .sidebar-panel.active { display: block; }
+        .file-list { list-style: none; }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 6px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-item:hover { border-color: #6c5ce7; transform: translateX(3px); }
+        .file-item.expanded { border-color: #6c5ce7; background: #f8f9ff; }
+        .file-icon { font-size: 18px; margin-right: 10px; }
+        .file-info { flex: 1; min-width: 0; }
+        .file-name { font-size: 11px; font-weight: 600; color: #495057; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { font-size: 9px; color: #6c757d; display: flex; gap: 8px; }
+        .file-actions { display: flex; gap: 4px; }
+        .file-action-btn {
+            padding: 4px 8px;
+            background: none;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+        .file-action-btn:hover { background: #e9ecef; }
+        .file-action-btn.delete { color: #dc3545; border-color: #dc3545; }
+        .file-action-btn.delete:hover { background: #dc3545; color: white; }
+        .file-details {
+            display: none;
+            padding: 10px;
+            margin-top: 8px;
+            background: #f1f3f4;
+            border-radius: 6px;
+            font-size: 10px;
+        }
+        .file-item.expanded .file-details { display: block; }
+        .detail-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #e0e0e0; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #6c757d; }
+        .detail-value { font-weight: 600; color: #495057; }
+        .index-stats {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+        .index-stats h4 { font-size: 12px; color: #495057; margin-bottom: 10px; }
+        .index-stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 11px; }
+        .chat-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%); }
+        .welcome-message { text-align: center; padding: 40px 30px; color: #495057; }
+        .welcome-message h2 { font-size: 22px; margin-bottom: 12px; color: #0f3460; }
+        .welcome-message p { margin-bottom: 8px; color: #6c757d; font-size: 14px; }
+        .welcome-features { display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        .welcome-feature {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            width: 140px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .welcome-feature:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .welcome-feature .icon { font-size: 28px; margin-bottom: 8px; }
+        .welcome-feature h3 { font-size: 12px; color: #0f3460; margin-bottom: 4px; }
+        .welcome-feature p { font-size: 10px; color: #6c757d; }
+        .message { margin-bottom: 18px; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message-content { padding: 14px 18px; border-radius: 14px; max-width: 85%; line-height: 1.6; font-size: 13px; }
+        .question { text-align: right; }
+        .question .message-content { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+        .answer .message-content { background: white; border: 1px solid #e9ecef; border-bottom-left-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .research-response .message-content { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #2196f3; max-width: 95%; }
+        .security-blocked .message-content { background: linear-gradient(135deg, #fff3cd, #ffeaa7); border: 2px solid #f39c12; color: #856404; }
+        .message-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+        .badge.source { background: #e3f2fd; color: #1565c0; }
+        .badge.entity { background: #f3e5f5; color: #7b1fa2; }
+        .badge.general { background: #fff3e0; color: #e65100; }
+        .badge.research { background: #e8f5e9; color: #2e7d32; }
+        .badge.web { background: #fce4ec; color: #c2185b; }
+        .sources { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; }
+        .sources-title { font-size: 10px; color: #6c757d; margin-bottom: 6px; font-weight: 600; }
+        .source-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+        .source-tag { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #2e7d32; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 500; }
+        .input-area { padding: 15px 20px; background: white; border-top: 1px solid #e9ecef; }
+        .input-wrapper { display: flex; gap: 10px; align-items: center; }
+        #questionInput { flex: 1; padding: 12px 18px; border: 2px solid #e9ecef; border-radius: 25px; font-size: 13px; transition: all 0.3s; }
+        #questionInput:focus { outline: none; border-color: #6c5ce7; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+        .input-buttons { display: flex; gap: 6px; }
+        #sendBtn, #researchBtn { padding: 12px 20px; color: white; border: none; border-radius: 25px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
+        #sendBtn { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+        #researchBtn { background: linear-gradient(135deg, #0984e3, #74b9ff); }
+        #sendBtn:hover, #researchBtn:hover { transform: translateY(-2px); }
+        #sendBtn:disabled, #researchBtn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .loading { display: none; text-align: center; padding: 15px; }
+        .loading.active { display: block; }
+        .loading-spinner { width: 35px; height: 35px; border: 3px solid #e9ecef; border-top-color: #6c5ce7; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: #6c757d; font-size: 12px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 16px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); }
+        .modal-header { padding: 18px 22px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10; }
+        .modal-title { font-size: 16px; font-weight: 600; color: #0f3460; }
+        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #6c757d; }
+        .modal-body { padding: 20px; }
+        .modal-tabs { display: flex; border-bottom: 1px solid #e9ecef; margin-bottom: 20px; }
+        .modal-tab { padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: 600; color: #6c757d; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .modal-tab:hover { color: #6c5ce7; }
+        .modal-tab.active { color: #6c5ce7; border-bottom-color: #6c5ce7; }
+        .modal-panel { display: none; }
+        .modal-panel.active { display: block; }
+        .setting-group { margin-bottom: 20px; }
+        .setting-group-title { font-size: 11px; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #f8f9fa; border-radius: 10px; margin-bottom: 8px; }
+        .setting-info { flex: 1; }
+        .setting-info h4 { font-size: 13px; color: #495057; margin-bottom: 2px; }
+        .setting-info p { font-size: 10px; color: #6c757d; }
+        .setting-control { display: flex; align-items: center; gap: 10px; }
+        .setting-input { padding: 6px 10px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; width: 80px; text-align: center; }
+        .setting-select { padding: 6px 10px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; background: white; }
+        .btn { padding: 8px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; }
+        .btn-success { background: linear-gradient(135deg, #00b894, #00cec9); color: white; }
+        .btn-danger { background: #f8f9fa; color: #dc3545; border: 1px solid #dc3545; }
+        .btn-secondary { background: #f8f9fa; color: #495057; border: 1px solid #dee2e6; }
+        .btn:hover { transform: translateY(-1px); }
+        .config-status { background: #e3f2fd; border-radius: 10px; padding: 12px; margin-bottom: 15px; }
+        .config-status-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 12px; }
+        .config-status-item:last-child { border-bottom: none; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .toast { background: white; padding: 12px 16px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease-out; max-width: 320px; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.success { border-left: 4px solid #00b894; }
+        .toast.error { border-left: 4px solid #d63031; }
+        .toast.info { border-left: 4px solid #0984e3; }
+        .upload-info { font-size: 10px; color: #6c757d; text-align: center; margin-top: 8px; }
+        .kg-panel { padding: 15px; }
+        .kg-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .kg-stat { background: white; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+        .kg-stat-value { font-size: 20px; font-weight: 700; color: #6c5ce7; }
+        .kg-stat-label { font-size: 10px; color: #6c757d; text-transform: uppercase; }
+        .kg-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; left: 0; top: 0; bottom: 0; z-index: 100; width: 300px; }
+            .sidebar.collapsed { transform: translateX(-100%); }
+            .stats-left { display: none; }
+            .header-actions { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <span class="logo">🎓</span>
+                <div class="header-title">
+                    <h1>AI-Assistant-SelfTutoring</h1>
+                    <p>v2.0 • Document-Grounded Learning Assistant</p>
+                </div>
+                <span class="mode-badge fast" id="modeBadge">⚡ Fast Mode</span>
+            </div>
+            <div class="header-actions">
+                <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.csv,.json,.md,.html,.xml" multiple>
+                <button class="header-btn primary" onclick="document.getElementById('fileInput').click()">📤 Upload</button>
+                <button class="header-btn research" onclick="openResearchModal()">🔬 Research</button>
+                <button class="header-btn kg" onclick="openKGModal()">🕸️ Knowledge Graph</button>
+                <button class="header-btn" onclick="toggleSidebar()">📁 Index</button>
+                <button class="header-btn" onclick="openSettings()">⚙️ Settings</button>
+            </div>
+        </div>
+        <div class="stats-bar">
+            <div class="stats-left">
+                <div class="stat-item"><span class="stat-icon">📄</span><div class="stat-info"><span class="stat-label">Documents</span><span class="stat-value" id="docCount">0</span></div></div>
+                <div class="stat-item"><span class="stat-icon">📦</span><div class="stat-info"><span class="stat-label">Chunks</span><span class="stat-value" id="chunkCount">0</span></div></div>
+                <div class="stat-item" id="entityStatItem"><span class="stat-icon">🕸️</span><div class="stat-info"><span class="stat-label">Entities</span><span class="stat-value" id="entityCount">0</span></div></div>
+            </div>
+            <div class="stats-right">
+                <div class="toggle-container">
+                    <span class="toggle-label">KG</span>
+                    <label class="toggle-switch"><input type="checkbox" id="kgToggle" onchange="toggleKnowledgeGraph()"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Guardrails</span>
+                    <label class="toggle-switch"><input type="checkbox" id="guardrailsToggle" checked onchange="toggleGuardrails()"><span class="toggle-slider"></span></label>
+                </div>
+                <span class="status-badge active" id="statusBadge">🛡️ Protected</span>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="sidebar collapsed" id="sidebar">
+                <div class="sidebar-header"><span class="sidebar-title">📁 Index Explorer</span><button onclick="refreshFileList()" style="background:none;border:none;cursor:pointer;font-size:14px;">🔄</button></div>
+                <div class="sidebar-tabs">
+                    <div class="sidebar-tab active" onclick="switchSidebarTab('files')">📄 Files</div>
+                    <div class="sidebar-tab" onclick="switchSidebarTab('stats')">📊 Stats</div>
+                    <div class="sidebar-tab" onclick="switchSidebarTab('chunks')">📦 Chunks</div>
+                </div>
+                <div class="sidebar-content">
+                    <div class="sidebar-panel active" id="filesPanel">
+                        <ul class="file-list" id="fileList"><li style="padding:20px;text-align:center;color:#6c757d;font-size:12px;">Loading...</li></ul>
+                    </div>
+                    <div class="sidebar-panel" id="statsPanel">
+                        <div class="index-stats">
+                            <h4>📊 Index Statistics</h4>
+                            <div class="index-stat-row"><span>Total Documents</span><span id="statDocs">0</span></div>
+                            <div class="index-stat-row"><span>Total Chunks</span><span id="statChunks">0</span></div>
+                            <div class="index-stat-row"><span>Total Entities</span><span id="statEntities">0</span></div>
+                            <div class="index-stat-row"><span>Relationships</span><span id="statRelations">0</span></div>
+                            <div class="index-stat-row"><span>Index Size</span><span id="statSize">-</span></div>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;" onclick="forceReindex()">🔄 Re-index All</button>
+                    </div>
+                    <div class="sidebar-panel" id="chunksPanel">
+                        <div id="chunksList" style="font-size:11px;color:#6c757d;">Select a document to view chunks</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-section">
+                <div class="chat-container" id="chatContainer">
+                    <div class="welcome-message">
+                        <h2>Welcome to AI-Assistant-SelfTutoring! 🎓</h2>
+                        <p>Your intelligent self-learning companion with document grounding.</p>
+                        <p style="color:#00b894;font-weight:600;font-size:12px;">Upload documents • Ask questions • Deep research • Knowledge graphs</p>
+                        <div class="welcome-features">
+                            <div class="welcome-feature" onclick="document.getElementById('fileInput').click()"><div class="icon">📄</div><h3>Upload</h3><p>PDF, DOCX, TXT (50MB)</p></div>
+                            <div class="welcome-feature" onclick="document.getElementById('questionInput').focus()"><div class="icon">❓</div><h3>Ask</h3><p>Get cited answers</p></div>
+                            <div class="welcome-feature" onclick="openResearchModal()"><div class="icon">🔬</div><h3>Research</h3><p>Deep web search</p></div>
+                            <div class="welcome-feature" onclick="openKGModal()"><div class="icon">🕸️</div><h3>Graph</h3><p>Entity relations</p></div>
+                        </div>
+                        <div class="upload-info">Max upload: 50MB per file • Supported: PDF, DOCX, TXT, CSV, JSON, MD, HTML, XML</div>
+                    </div>
+                </div>
+                <div class="loading" id="loading"><div class="loading-spinner"></div><div class="loading-text">Searching...</div></div>
+                <div class="loading" id="researchLoading"><div class="loading-spinner" style="border-top-color:#0984e3;"></div><div class="loading-text">🔬 Deep research in progress...</div></div>
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="questionInput" placeholder="Ask a question about your documents..." onkeypress="handleKeyPress(event)">
+                        <div class="input-buttons">
+                            <button id="sendBtn" onclick="askQuestion()">Send ➤</button>
+                            <button id="researchBtn" onclick="openResearchModal()">🔬</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header"><span class="modal-title">⚙️ Settings</span><button class="modal-close" onclick="closeSettings()">&times;</button></div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <div class="modal-tab active" onclick="switchSettingsTab('general')">General</div>
+                    <div class="modal-tab" onclick="switchSettingsTab('search')">Search</div>
+                    <div class="modal-tab" onclick="switchSettingsTab('guardrails')">Guardrails</div>
+                    <div class="modal-tab" onclick="switchSettingsTab('advanced')">Advanced</div>
+                </div>
+                
+                <!-- General Tab -->
+                <div class="modal-panel active" id="generalPanel">
+                    <div class="config-status">
+                        <div class="config-status-item"><span>Mode</span><span id="configMode">Fast</span></div>
+                        <div class="config-status-item"><span>LLM Model</span><span id="configLLM">llama3.2</span></div>
+                        <div class="config-status-item"><span>Neo4j</span><span id="configNeo4j">Not Connected</span></div>
+                        <div class="config-status-item"><span>Max Upload</span><span>50 MB</span></div>
+                    </div>
+                    <div class="setting-group">
+                        <div class="setting-group-title">🕸️ Knowledge Graph</div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Enable Knowledge Graph</h4><p>Extract entities and relationships (requires Neo4j)</p></div>
+                            <div class="setting-control"><button id="kgEnableBtn" class="btn btn-success" onclick="toggleKnowledgeGraph()">Enable</button></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Entity Extraction</h4><p>Use LLM to extract entities from documents</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="entityExtractionToggle"><span class="toggle-slider"></span></label></div>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <div class="setting-group-title">📁 Document Management</div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Re-index All Documents</h4><p>Clear and rebuild the entire index</p></div>
+                            <div class="setting-control"><button class="btn btn-primary" onclick="forceReindex()">Re-index</button></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Clear Chat History</h4><p>Remove all messages from this session</p></div>
+                            <div class="setting-control"><button class="btn btn-danger" onclick="clearChat()">Clear</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Tab -->
+                <div class="modal-panel" id="searchPanel">
+                    <div class="setting-group">
+                        <div class="setting-group-title">🔍 Search Parameters</div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Top K Results</h4><p>Number of chunks to retrieve (1-20)</p></div>
+                            <div class="setting-control"><input type="number" class="setting-input" id="topKInput" min="1" max="20" value="6"></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Min Relevance Score</h4><p>Minimum similarity threshold (0.0-1.0)</p></div>
+                            <div class="setting-control"><input type="number" class="setting-input" id="minRelevanceInput" min="0" max="1" step="0.1" value="0.3"></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Search Mode</h4><p>How to search your documents</p></div>
+                            <div class="setting-control">
+                                <select class="setting-select" id="searchModeSelect">
+                                    <option value="vector">Vector Only</option>
+                                    <option value="graph">Graph Only</option>
+                                    <option value="hybrid" selected>Hybrid</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Context Window</h4><p>Maximum characters in context (1000-10000)</p></div>
+                            <div class="setting-control"><input type="number" class="setting-input" id="contextWindowInput" min="1000" max="10000" step="500" value="6000"></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="saveSearchParams()">💾 Save Search Settings</button>
+                </div>
+                
+                <!-- Guardrails Tab -->
+                <div class="modal-panel" id="guardrailsPanel">
+                    <div class="setting-group">
+                        <div class="setting-group-title">🛡️ Security Guardrails</div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Enable Guardrails</h4><p>Master switch for all security checks</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="guardrailsMasterToggle" checked onchange="toggleGuardrailsMaster()"><span class="toggle-slider"></span></label></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Block Injection Attacks</h4><p>Detect and block prompt injection attempts</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="blockInjectionToggle" checked><span class="toggle-slider"></span></label></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Block Jailbreak Attempts</h4><p>Prevent DAN and similar bypasses</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="blockJailbreakToggle" checked><span class="toggle-slider"></span></label></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>PII Redaction</h4><p>Automatically redact sensitive information</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="piiRedactionToggle" checked><span class="toggle-slider"></span></label></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Content Filtering</h4><p>Filter potentially harmful content</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="contentFilterToggle" checked><span class="toggle-slider"></span></label></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Strict Mode</h4><p>More aggressive blocking (may affect legitimate queries)</p></div>
+                            <div class="setting-control"><label class="toggle-switch"><input type="checkbox" id="strictModeToggle"><span class="toggle-slider"></span></label></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="saveGuardrailsConfig()">💾 Save Guardrails Settings</button>
+                </div>
+                
+                <!-- Advanced Tab -->
+                <div class="modal-panel" id="advancedPanel">
+                    <div class="setting-group">
+                        <div class="setting-group-title">⚡ Performance</div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>LLM Request Timeout</h4><p>Seconds to wait for LLM response</p></div>
+                            <div class="setting-control"><input type="number" class="setting-input" id="timeoutInput" min="30" max="300" value="120">s</div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Chunk Size</h4><p>Characters per document chunk</p></div>
+                            <div class="setting-control"><input type="number" class="setting-input" id="chunkSizeInput" min="200" max="1000" value="500"></div>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <div class="setting-group-title">🔧 Maintenance</div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Export Configuration</h4><p>Download current settings as JSON</p></div>
+                            <div class="setting-control"><button class="btn btn-secondary" onclick="exportConfig()">📥 Export</button></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info"><h4>Reset to Defaults</h4><p>Restore all settings to defaults</p></div>
+                            <div class="setting-control"><button class="btn btn-danger" onclick="resetDefaults()">🔄 Reset</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Knowledge Graph Modal -->
+    <div class="modal-overlay" id="kgModal">
+        <div class="modal">
+            <div class="modal-header"><span class="modal-title">🕸️ Knowledge Graph</span><button class="modal-close" onclick="closeKGModal()">&times;</button></div>
+            <div class="modal-body">
+                <div class="kg-panel">
+                    <div class="kg-stats">
+                        <div class="kg-stat"><div class="kg-stat-value" id="kgEntities">0</div><div class="kg-stat-label">Entities</div></div>
+                        <div class="kg-stat"><div class="kg-stat-value" id="kgRelations">0</div><div class="kg-stat-label">Relations</div></div>
+                        <div class="kg-stat"><div class="kg-stat-value" id="kgDocs">0</div><div class="kg-stat-label">Documents</div></div>
+                    </div>
+                    <div class="config-status" id="kgStatus">
+                        <div class="config-status-item"><span>Status</span><span id="kgConnectionStatus">Not Connected</span></div>
+                        <div class="config-status-item"><span>Neo4j URI</span><span id="kgUri">bolt://localhost:7687</span></div>
+                        <div class="config-status-item"><span>Entity Extraction</span><span id="kgExtractionStatus">Disabled</span></div>
+                    </div>
+                    <div class="kg-actions">
+                        <button class="btn btn-success" onclick="enableKG()">🟢 Enable KG</button>
+                        <button class="btn btn-primary" onclick="reindexWithKG()">🔄 Re-index with KG</button>
+                        <button class="btn btn-secondary" onclick="viewEntityTypes()">📋 Entity Types</button>
+                        <button class="btn btn-danger" onclick="clearKG()">🗑️ Clear Graph</button>
+                    </div>
+                    <div style="margin-top:15px;">
+                        <h4 style="font-size:12px;margin-bottom:10px;">Recent Entities</h4>
+                        <div id="recentEntities" style="font-size:11px;color:#6c757d;">Enable Knowledge Graph to see entities</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Modal -->
+    <div class="modal-overlay" id="researchModal">
+        <div class="modal">
+            <div class="modal-header"><span class="modal-title">🔬 Deep Research</span><button class="modal-close" onclick="closeResearchModal()">&times;</button></div>
+            <div class="modal-body">
+                <div style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);padding:12px;border-radius:10px;margin-bottom:15px;border-left:4px solid #1976d2;">
+                    <p style="margin:0;color:#1565c0;font-size:12px;">Rigorous research combining web search, academic sources, and your documents. Synthesizes findings into insights and novel ideas.</p>
+                </div>
+                <div style="margin-bottom:15px;"><label style="display:block;margin-bottom:6px;font-weight:600;font-size:12px;">Research Topic</label><input type="text" id="researchTopic" placeholder="e.g., Zero trust architecture in healthcare..." style="width:100%;padding:12px;border:2px solid #e9ecef;border-radius:8px;font-size:13px;"></div>
+                <div style="display:flex;gap:15px;margin-bottom:15px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;"><input type="checkbox" id="includeWeb" checked> 🌐 Web Search</label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;"><input type="checkbox" id="includeDocs" checked> 📚 Your Documents</label>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:12px;">Depth</label>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-secondary depth-btn" onclick="selectDepth('quick')" id="depthQuick">⚡ Quick</button>
+                        <button class="btn btn-primary depth-btn" onclick="selectDepth('standard')" id="depthStandard">📊 Standard</button>
+                        <button class="btn btn-secondary depth-btn" onclick="selectDepth('deep')" id="depthDeep">🔬 Deep</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="startDeepResearch()">🚀 Start Research</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        let pendingQuestion = null, kgEnabled = false, guardrailsEnabled = true, selectedDepth = 'standard';
+        const chatContainer = document.getElementById('chatContainer'), questionInput = document.getElementById('questionInput');
+        const sendBtn = document.getElementById('sendBtn'), researchBtn = document.getElementById('researchBtn');
+        const loading = document.getElementById('loading'), researchLoading = document.getElementById('researchLoading');
+
+        document.addEventListener('DOMContentLoaded', () => { loadConfigStatus(); loadStats(); refreshFileList(); });
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = {success:'✅',error:'❌',info:'ℹ️'};
+            toast.innerHTML = '<span>' + icons[type] + '</span><span style="flex:1;font-size:12px;">' + message + '</span><button onclick="this.parentElement.remove()" style="background:none;border:none;font-size:16px;cursor:pointer;">&times;</button>';
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        async function loadConfigStatus() {
+            try {
+                const response = await fetch('/config-status');
+                const config = await response.json();
+                kgEnabled = config.knowledge_graph_enabled;
+                document.getElementById('kgToggle').checked = kgEnabled;
+                document.getElementById('modeBadge').textContent = kgEnabled ? '🕸️ Full Mode' : '⚡ Fast Mode';
+                document.getElementById('modeBadge').className = `mode-badge ${kgEnabled ? 'full' : 'fast'}`;
+                document.getElementById('configMode').textContent = config.mode;
+                document.getElementById('configNeo4j').textContent = config.neo4j_connected ? '✅ Connected' : '❌ Not Connected';
+                document.getElementById('configLLM').textContent = config.llm_model || 'llama3.2';
+                document.getElementById('kgEnableBtn').textContent = kgEnabled ? 'Disable' : 'Enable';
+                document.getElementById('kgEnableBtn').className = kgEnabled ? 'btn btn-danger' : 'btn btn-success';
+                if (config.search_params) {
+                    document.getElementById('topKInput').value = config.search_params.top_k || 6;
+                    document.getElementById('minRelevanceInput').value = config.search_params.min_relevance || 0.3;
+                    document.getElementById('searchModeSelect').value = config.search_params.search_mode || 'hybrid';
+                    document.getElementById('contextWindowInput').value = config.search_params.context_window || 6000;
+                }
+                if (config.guardrails_config) {
+                    document.getElementById('blockInjectionToggle').checked = config.guardrails_config.block_injection !== false;
+                    document.getElementById('blockJailbreakToggle').checked = config.guardrails_config.block_jailbreak !== false;
+                    document.getElementById('piiRedactionToggle').checked = config.guardrails_config.pii_redaction !== false;
+                    document.getElementById('contentFilterToggle').checked = config.guardrails_config.content_filtering !== false;
+                    document.getElementById('strictModeToggle').checked = config.guardrails_config.strict_mode === true;
+                }
+                guardrailsEnabled = config.guardrails_enabled !== false;
+                document.getElementById('guardrailsToggle').checked = guardrailsEnabled;
+                document.getElementById('guardrailsMasterToggle').checked = guardrailsEnabled;
+                updateStatusBadge();
+            } catch (e) { console.error('Config load error:', e); }
+        }
+
+        function updateStatusBadge() {
+            const badge = document.getElementById('statusBadge');
+            if (guardrailsEnabled) { badge.textContent = '🛡️ Protected'; badge.className = 'status-badge active'; }
+            else { badge.textContent = '⚠️ Unprotected'; badge.className = 'status-badge inactive'; }
+        }
+
+        async function loadStats() {
+            try {
+                const [chromaRes, graphRes] = await Promise.all([fetch('/chroma-status'), fetch('/graph-stats')]);
+                const chromaData = await chromaRes.json(), graphData = await graphRes.json();
+                document.getElementById('docCount').textContent = chromaData.total_documents || 0;
+                document.getElementById('chunkCount').textContent = chromaData.total_chunks || 0;
+                document.getElementById('entityCount').textContent = graphData.total_entities || 0;
+                document.getElementById('statDocs').textContent = chromaData.total_documents || 0;
+                document.getElementById('statChunks').textContent = chromaData.total_chunks || 0;
+                document.getElementById('statEntities').textContent = graphData.total_entities || 0;
+                document.getElementById('statRelations').textContent = graphData.total_relationships || 0;
+                document.getElementById('kgEntities').textContent = graphData.total_entities || 0;
+                document.getElementById('kgRelations').textContent = graphData.total_relationships || 0;
+                document.getElementById('kgDocs').textContent = chromaData.total_documents || 0;
+            } catch (e) { console.error('Stats load error:', e); }
+        }
+
+        async function toggleKnowledgeGraph() {
+            const enabling = !kgEnabled;
+            try {
+                const response = await fetch(enabling ? '/config/enable-kg' : '/config/disable-kg', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) { showToast(data.message, 'success'); loadConfigStatus(); loadStats(); }
+                else { showToast(data.error || 'Failed', 'error'); document.getElementById('kgToggle').checked = kgEnabled; }
+            } catch (e) { showToast('Error toggling KG', 'error'); }
+        }
+
+        async function toggleGuardrails() {
+            guardrailsEnabled = document.getElementById('guardrailsToggle').checked;
+            document.getElementById('guardrailsMasterToggle').checked = guardrailsEnabled;
+            try {
+                await fetch('/config/guardrails', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: guardrailsEnabled }) });
+                updateStatusBadge();
+                showToast(guardrailsEnabled ? 'Guardrails enabled' : 'Guardrails disabled', 'info');
+            } catch (e) { console.error(e); }
+        }
+
+        function toggleGuardrailsMaster() {
+            guardrailsEnabled = document.getElementById('guardrailsMasterToggle').checked;
+            document.getElementById('guardrailsToggle').checked = guardrailsEnabled;
+            toggleGuardrails();
+        }
+
+        async function saveSearchParams() {
+            const params = {
+                top_k: parseInt(document.getElementById('topKInput').value),
+                min_relevance: parseFloat(document.getElementById('minRelevanceInput').value),
+                search_mode: document.getElementById('searchModeSelect').value,
+                context_window: parseInt(document.getElementById('contextWindowInput').value)
+            };
+            try {
+                await fetch('/config/search-params', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+                showToast('Search settings saved', 'success');
+            } catch (e) { showToast('Failed to save', 'error'); }
+        }
+
+        async function saveGuardrailsConfig() {
+            const config = {
+                enabled: document.getElementById('guardrailsMasterToggle').checked,
+                block_injection: document.getElementById('blockInjectionToggle').checked,
+                block_jailbreak: document.getElementById('blockJailbreakToggle').checked,
+                pii_redaction: document.getElementById('piiRedactionToggle').checked,
+                content_filtering: document.getElementById('contentFilterToggle').checked,
+                strict_mode: document.getElementById('strictModeToggle').checked
+            };
+            try {
+                await fetch('/config/guardrails', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
+                showToast('Guardrails settings saved', 'success');
+                loadConfigStatus();
+            } catch (e) { showToast('Failed to save', 'error'); }
+        }
+
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (!files.length) return;
+            for (const file of files) {
+                if (file.size > 50 * 1024 * 1024) { showToast(`${file.name} exceeds 50MB limit`, 'error'); continue; }
+                const formData = new FormData();
+                formData.append('file', file);
+                showToast(`Uploading ${file.name}...`, 'info');
+                try {
+                    const response = await fetch('/upload', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.success) showToast(`✅ ${file.name} indexed (${data.chunks_created} chunks)`, 'success');
+                    else if (data.skipped) showToast(`⏭️ ${file.name} already indexed`, 'info');
+                    else showToast(`❌ ${data.error || 'Failed'}`, 'error');
+                } catch (e) { showToast(`Error: ${file.name}`, 'error'); }
+            }
+            loadStats(); refreshFileList(); e.target.value = '';
+        });
+
+        async function refreshFileList() {
+            try {
+                const response = await fetch('/chroma-status');
+                const data = await response.json();
+                const fileList = document.getElementById('fileList');
+                if (!data.documents || !data.documents.length) { fileList.innerHTML = '<li style="padding:20px;text-align:center;color:#6c757d;font-size:12px;">No documents indexed</li>'; return; }
+                fileList.innerHTML = data.documents.map(f => {
+                    const ext = f.split('.').pop().toLowerCase();
+                    const iconMap = {pdf:'📕',docx:'📘',txt:'📄',csv:'📊',json:'📋',md:'📝',html:'🌐',xml:'📰'};
+                    const icon = iconMap[ext] || '📄';
+                    return `
+                    <li class="file-item" onclick="toggleFileDetails(this)">
+                        <span class="file-icon">${icon}</span>
+                        <div class="file-info">
+                            <div class="file-name" title="${f}">${f}</div>
+                            <div class="file-meta"><span>Indexed</span></div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-action-btn" onclick="event.stopPropagation();viewChunks('${f}')">📦</button>
+                            <button class="file-action-btn delete" onclick="event.stopPropagation();deleteDocument('${f}')">🗑️</button>
+                        </div>
+                        <div class="file-details">
+                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value">Indexed</span></div>
+                            <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">${ext.toUpperCase()}</span></div>
+                        </div>
+                    </li>
+                `}).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        function toggleFileDetails(el) { el.classList.toggle('expanded'); }
+
+        async function viewChunks(filename) {
+            switchSidebarTab('chunks');
+            document.getElementById('chunksList').innerHTML = `<p>Loading chunks for ${filename}...</p>`;
+            // Placeholder - would need backend endpoint
+            document.getElementById('chunksList').innerHTML = `<p style="color:#6c757d;">Chunks for: <strong>${filename}</strong></p><p style="font-size:10px;">Detailed chunk view coming soon...</p>`;
+        }
+
+        async function deleteDocument(filename) {
+            if (!confirm(`Delete "${filename}"?`)) return;
+            try {
+                const response = await fetch('/delete-document', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename, delete_file: false }) });
+                const data = await response.json();
+                if (data.success) { showToast(`Deleted ${filename}`, 'success'); loadStats(); refreshFileList(); }
+                else showToast('Delete failed', 'error');
+            } catch (e) { showToast('Error', 'error'); }
+        }
+
+        async function forceReindex() {
+            if (!confirm('Re-index all documents?')) return;
+            showToast('Re-indexing...', 'info');
+            try {
+                const response = await fetch('/reindex', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) { showToast(`Re-indexed ${data.files_indexed} files`, 'success'); loadStats(); refreshFileList(); }
+                else showToast('Failed', 'error');
+            } catch (e) { showToast('Error', 'error'); }
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function switchSidebarTab(tab) {
+            document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`.sidebar-tab:nth-child(${tab === 'files' ? 1 : tab === 'stats' ? 2 : 3})`).classList.add('active');
+            document.getElementById(`${tab}Panel`).classList.add('active');
+        }
+        function openSettings() { document.getElementById('settingsModal').classList.add('active'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+        function switchSettingsTab(tab) {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`${tab}Panel`).classList.add('active');
+        }
+        function openKGModal() { document.getElementById('kgModal').classList.add('active'); loadStats(); }
+        function closeKGModal() { document.getElementById('kgModal').classList.remove('active'); }
+        function enableKG() { document.getElementById('kgToggle').checked = true; toggleKnowledgeGraph(); }
+        async function reindexWithKG() {
+            if (!confirm('Re-index with Knowledge Graph?')) return;
+            showToast('Re-indexing with KG...', 'info');
+            try {
+                const response = await fetch('/config/reindex-with-kg', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) { showToast(`Done: ${data.files_indexed} files`, 'success'); loadStats(); }
+                else showToast('Failed', 'error');
+            } catch (e) { showToast('Error', 'error'); }
+        }
+        function viewEntityTypes() { showToast('Entity types view coming soon', 'info'); }
+        function clearKG() { if (confirm('Clear all graph data?')) showToast('Clear KG not implemented', 'info'); }
+        function openResearchModal() { document.getElementById('researchModal').classList.add('active'); document.getElementById('researchTopic').value = questionInput.value; }
+        function closeResearchModal() { document.getElementById('researchModal').classList.remove('active'); }
+        function selectDepth(d) { selectedDepth = d; document.querySelectorAll('.depth-btn').forEach(b => b.className = 'btn btn-secondary depth-btn'); document.getElementById(`depth${d.charAt(0).toUpperCase()+d.slice(1)}`).className = 'btn btn-primary depth-btn'; }
+        function exportConfig() { showToast('Export coming soon', 'info'); }
+        function resetDefaults() { if (confirm('Reset all settings?')) showToast('Reset coming soon', 'info'); }
+
+        async function startDeepResearch() {
+            const topic = document.getElementById('researchTopic').value.trim();
+            if (!topic) { showToast('Enter a topic', 'error'); return; }
+            closeResearchModal();
+            document.querySelector('.welcome-message')?.remove();
+            addMessage(`🔬 Research: ${topic}`, 'question');
+            questionInput.disabled = sendBtn.disabled = researchBtn.disabled = true;
+            researchLoading.classList.add('active');
+            try {
+                const response = await fetch('/deep-research', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, include_web: document.getElementById('includeWeb').checked, include_docs: document.getElementById('includeDocs').checked, depth: selectedDepth }) });
+                const data = await response.json();
+                if (response.ok && data.success) addResearchMessage(data);
+                else { addMessage(`Failed: ${data.error || 'Unknown'}`, 'answer'); if (data.hint) showToast(data.hint, 'info'); }
+            } catch (e) { addMessage('Research failed', 'answer'); }
+            finally { questionInput.disabled = sendBtn.disabled = researchBtn.disabled = false; researchLoading.classList.remove('active'); }
+        }
+
+        function addResearchMessage(data) {
+            const div = document.createElement('div');
+            div.className = 'message answer research-response';
+            div.innerHTML = `<div class="message-content">${data.html}</div><div class="message-badges"><span class="badge research">🔬 Research</span>${data.web_results_count > 0 ? `<span class="badge web">🌐 ${data.web_results_count} sources</span>` : ''}${data.has_document_context ? '<span class="badge source">📚 Docs</span>' : ''}</div>`;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') askQuestion(); }
+        function formatAnswer(text) { return '<p>' + text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\n\n/g, '</p><p>') + '</p>'; }
+
+        async function askQuestion(useGeneral = false) {
+            const q = useGeneral && pendingQuestion ? pendingQuestion : questionInput.value.trim();
+            if (!q) return;
+            document.querySelector('.welcome-message')?.remove();
+            if (!useGeneral) { addMessage(q, 'question'); questionInput.value = ''; }
+            questionInput.disabled = sendBtn.disabled = researchBtn.disabled = true;
+            loading.classList.add('active');
+            try {
+                const response = await fetch('/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q, use_general_knowledge: useGeneral }) });
+                const data = await response.json();
+                if (response.ok) {
+                    if (data.blocked_by_guardrails) addMessage(data.answer, 'answer', null, null, false, true);
+                    else if (data.needs_permission) { pendingQuestion = q; addPermissionMessage(data.answer); }
+                    else { pendingQuestion = null; addMessage(data.answer, 'answer', data.sources, data.graph_stats, data.used_general_knowledge); }
+                } else addMessage('Error: ' + data.error, 'answer');
+            } catch (e) { addMessage('Connection error', 'answer'); }
+            finally { questionInput.disabled = sendBtn.disabled = researchBtn.disabled = false; loading.classList.remove('active'); questionInput.focus(); }
+        }
+
+        function addMessage(content, type, sources = null, stats = null, general = false, blocked = false) {
+            const div = document.createElement('div');
+            div.className = `message ${type}${blocked ? ' security-blocked' : ''}`;
+            let html = `<div class="message-content">${type === 'answer' ? formatAnswer(content) : content}</div>`;
+            if (type === 'answer') {
+                html += '<div class="message-badges">';
+                if (blocked) html += '<span class="badge" style="background:#fff3cd;color:#856404;">🛡️ Blocked</span>';
+                if (general) html += '<span class="badge general">⚠️ General</span>';
+                if (stats?.entities_found > 0) html += `<span class="badge entity">🕸️ ${stats.entities_found}</span>`;
+                if (stats?.documents_found > 0) html += `<span class="badge source">📄 ${stats.documents_found}</span>`;
+                html += '</div>';
+            }
+            if (sources?.length && type === 'answer') html += `<div class="sources"><div class="sources-title">📚 Sources</div><div class="source-tags">${sources.map(s => `<span class="source-tag">${s}</span>`).join('')}</div></div>`;
+            div.innerHTML = html;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addPermissionMessage(msg) {
+            const div = document.createElement('div');
+            div.className = 'message answer';
+            div.innerHTML = `<div class="message-content">${formatAnswer(msg)}<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin-top:10px;"><p style="margin:0 0 10px;color:#1565c0;font-size:12px;">🤔 Not found in your documents</p><div style="display:flex;gap:8px;"><button class="btn btn-success" onclick="approveGeneral()">✅ Use general</button><button class="btn btn-secondary" onclick="declineGeneral()">❌ No</button></div></div></div>`;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function approveGeneral() { document.querySelectorAll('.message:last-child div[style*="e3f2fd"]').forEach(p => p.remove()); askQuestion(true); }
+        function declineGeneral() { document.querySelectorAll('.message:last-child div[style*="e3f2fd"]').forEach(p => { p.innerHTML = '<p style="color:#6c757d;margin:0;font-size:11px;">✓ Only using your documents</p>'; }); pendingQuestion = null; }
+
+        async function clearChat() {
+            if (!confirm('Clear chat?')) return;
+            await fetch('/clear', { method: 'POST' });
+            chatContainer.innerHTML = '<div class="welcome-message"><h2>Welcome to AI-Assistant-SelfTutoring! 🎓</h2><p>Upload documents and ask questions.</p></div>';
+            closeSettings();
+            showToast('Chat cleared', 'success');
+        }
+    </script>
+</body>
+</html>
