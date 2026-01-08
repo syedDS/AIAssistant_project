@@ -12,7 +12,7 @@ from io import BytesIO
 import PyPDF2
 from docx import Document as DocxDocument
 from langchain_core.documents import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import (
     UPLOAD_FOLDER, SUPPORTED_EXTENSIONS, 
